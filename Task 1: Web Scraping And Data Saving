@@ -1,0 +1,46 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+def scrape_weather_data():
+    try:
+        # Define the URL of the weather website you want to scrape
+        url = "https://www.accuweather.com/en/in/bengaluru/204108/weather-forecast/204108"
+
+        # Send an HTTP GET request to the URL
+        response = requests.get(url)
+
+        # Check if the request was successful (status code 200)
+        response.raise_for_status()
+
+        # Parse the HTML content of the page using BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract temperature and humidity data (assuming specific HTML structure)
+        temperature_element = soup.find('span', {'class': 'temperature'})
+        humidity_element = soup.find('span', {'class': 'humidity'})
+
+        # Check if the elements were found before accessing their 'text' attribute
+        if temperature_element and humidity_element:
+            temperature = temperature_element.text
+            humidity = humidity_element.text
+
+            # Save the data in a CSV file
+            with open('weather_data.csv', 'w', newline='') as csvfile:
+                fieldnames = ['Temperature (°C)', 'Humidity (%)']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                writer.writeheader()
+                writer.writerow({'Temperature (°C)': temperature, 'Humidity (%)': humidity})
+
+            print('Weather data has been scraped and saved in weather_data.csv')
+        else:
+            print('Temperature or humidity data not found on the page.')
+
+    except requests.exceptions.RequestException as e:
+        print(f'Error: {e}')
+    except Exception as e:
+        print(f'An error occurred: {e}')
+
+# Call the function to scrape and save weather data
+scrape_weather_data()
